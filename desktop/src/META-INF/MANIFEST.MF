@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Class-Path: gdx-backend-lwjgl-1.9.8.jar jinput-platform-2.0.5-natives-
+ windows.jar jinput-2.0.5.jar jutils-1.0.0.jar lwjgl-platform-2.9.2-na
+ tives-linux.jar lwjgl-platform-2.9.2-natives-windows.jar jinput-platf
+ orm-2.0.5-natives-linux.jar gdx-box2d-platform-1.9.8-natives-desktop.
+ jar lwjgl-platform-2.9.2-natives-osx.jar lwjgl_util-2.9.2.jar gdx-1.9
+ .8.jar jorbis-0.0.17.jar jinput-platform-2.0.5-natives-osx.jar gdx-bo
+ x2d-1.9.8.jar gdx-platform-1.9.8-natives-desktop.jar jlayer-1.0.1-gdx
+ .jar lwjgl-2.9.2.jar
+Main-Class: com.mygdx.game.desktop.DesktopLauncher
+
