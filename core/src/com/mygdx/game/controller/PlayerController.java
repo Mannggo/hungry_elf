@@ -6,16 +6,22 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
+import com.google.gson.Gson;
 import com.mygdx.game.camera.CameraHelper;
 import com.mygdx.game.constant.CameraConstants;
 import com.mygdx.game.constant.MapConstants;
 import com.mygdx.game.constant.PlayerConstants;
+import com.mygdx.game.dto.LoginInfo;
+import com.mygdx.game.dto.PlayerInfo;
+import com.mygdx.game.dto.TransferInfo;
 import com.mygdx.game.sprite.Floor;
 import com.mygdx.game.sprite.SpeedUpBill;
 import com.mygdx.game.sprite.Star;
+import com.mygdx.game.udp.client.UDPClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -25,22 +31,29 @@ public class PlayerController extends InputAdapter {
 	private String TAG = getClass().getSimpleName();
 	private Properties properties = new Properties();
 	public Sprite player;
+	public Sprite player2;
+	public boolean isPlayer2In;
+	public TransferInfo transferInfo;
+	public LoginInfo loginInfo;
+	public PlayerInfo playerInfo;
+	public PlayerInfo player2Info;
 	public ArrayList<Sprite> floors;
 	public List<Sprite> stars;
 	public ArrayList<Sprite> speedBills;
 	public CameraHelper cameraHelper;
 	public Integer playerSpeed;
 
-	public PlayerController() {
-		init();
+	public PlayerController( UDPClient client) {
+		init(client);
 	}
 
-	private void init() {
+	private void init(UDPClient client) {
+		isPlayer2In = false;
 		// 注册使用本对象作为监听器
 		Gdx.input.setInputProcessor(this);
 		initStar();
 		initFloor();
-		initPlayer();
+		initPlayer(client);
 		initSpeedBill();
 		cameraHelper = new CameraHelper();
 		// 初始化相机以玩家为中心
@@ -50,7 +63,7 @@ public class PlayerController extends InputAdapter {
 	private void initSpeedBill() {
 		Texture billTexture = new Texture(Gdx.files.internal("pic/speed_bill.png"));
 
-		speedBills = new ArrayList();
+		speedBills = new ArrayList<Sprite>();
 		for (int a = 0; a < 10; a++) {
 			SpeedUpBill bill = new SpeedUpBill(billTexture);
 			bill.setSize(MapConstants.ITEM_WIDTH, MapConstants.ITEM_HEIGHT);
@@ -63,21 +76,30 @@ public class PlayerController extends InputAdapter {
 		
 	}
 
-	private void initPlayer() {
-		Texture texture = new Texture(Gdx.files.internal("pic/player_" + (int) (Math.random() * 10) + ".png"));
+	private void initPlayer(UDPClient client) {
+		String avatarNum = String.valueOf((int)(Math.random() *10));
+		player2 = null;
+		Texture texture = new Texture(Gdx.files.internal("pic/player_" + avatarNum + ".png"));
 		player = new Sprite(texture);
-		player.setSize(1.5f, 1.5f);
+		player.setSize(PlayerConstants.PLAYER_SIZE_WIDTH, PlayerConstants.PLAYER_SIZE_HEIGHT);
 		player.setOrigin(player.getWidth() / 2.0f, player.getHeight() / 2.0f);
 		player.setPosition(MathUtils.random(0f, MapConstants.FLOOR_X_TOTAL * MapConstants.LENGTH_OF_FLOOR_SIDE),
 				MathUtils.random(0f, MapConstants.FLOOR_Y_TOTAL * MapConstants.LENGTH_OF_FLOOR_SIDE));
 		playerSpeed = PlayerConstants.STEP_LEVEL_LOW;
-
+		playerInfo = new PlayerInfo();
+		playerInfo.setElfAvatar(avatarNum);
+		playerInfo.setPositionX(player.getX());
+		playerInfo.setPositionY(player.getY());
+		loginInfo = new LoginInfo("");
+		transferInfo = new TransferInfo(playerInfo, loginInfo);
+		
+		client.sendMessage(new Gson().toJson(transferInfo));
 	}
 
 	private void initFloor() {
 		Texture floorTexture = new Texture(Gdx.files.internal("pic/floor_1.png"));
 
-		floors = new ArrayList();
+		floors = new ArrayList<Sprite>();
 		for (int a = 0; a < MapConstants.FLOOR_X_TOTAL * MapConstants.FLOOR_Y_TOTAL; a++) {
 			Floor floor = new Floor(floorTexture);
 			floor.setSize(MapConstants.LENGTH_OF_FLOOR_SIDE, MapConstants.LENGTH_OF_FLOOR_SIDE);
@@ -92,7 +114,7 @@ public class PlayerController extends InputAdapter {
 
 	private void initStar() {
 		Texture starTexture = new Texture(Gdx.files.internal("pic/starGold.png"));
-		stars = new ArrayList();
+		stars = new ArrayList<Sprite>();
 		for (int a = 0; a < MapConstants.STAR_TOTAL; a++) {
 			Star star = new Star(starTexture);
 			float randomX = MathUtils.random(0f, MapConstants.LENGTH_OF_FLOOR_SIDE * MapConstants.FLOOR_X_TOTAL);
@@ -127,6 +149,7 @@ public class PlayerController extends InputAdapter {
 		if (player.getX() <= 0)
 			return;
 		player.setX(player.getX() - PlayerConstants.SPEED_MAP.get(playerSpeed));
+		
 	}
 
 	public void right() {
@@ -151,15 +174,7 @@ public class PlayerController extends InputAdapter {
 
 	@Override
 	public boolean keyUp(int keycode) {
-		Gdx.app.debug(TAG, "user pressed key :【" + Keys.toString(keycode) + "】");
-		// Reset game world
-		if (keycode == Keys.R) {
-			init();
-		} else if (keycode == Keys.PAGE_UP) {
-			playerSpeed = playerSpeed == PlayerConstants.STEP_LEVEL_HIGH ? PlayerConstants.STEP_LEVEL_HIGH : (playerSpeed + 1);
-		} else if (keycode == Keys.PAGE_DOWN) {
-			playerSpeed = playerSpeed == PlayerConstants.STEP_LEVEL_LOW ? PlayerConstants.STEP_LEVEL_LOW : (playerSpeed - 1);
-		} else if (keycode == Keys.ENTER) {
+		if (keycode == Keys.ENTER) {
 			// 切换是否相机跟随
 			cameraHelper.setTarget(cameraHelper.hasTarget() ? null : player);
 		}
@@ -198,5 +213,27 @@ public class PlayerController extends InputAdapter {
 		x += cameraHelper.getPosition().x;
 		y += cameraHelper.getPosition().y;
 		cameraHelper.setPosition(x, y);
+	}
+
+	public void setPlayer2Info(PlayerInfo player2Info) {
+		if (Objects.nonNull(player2Info)) {
+			this.player2Info = player2Info;
+			isPlayer2In = true;
+			Texture texture = new Texture(Gdx.files.internal("pic/player_" + player2Info.getElfAvatar() + ".png"));
+			
+			player2 = new Sprite(texture);
+			player2.setX(player2Info.getPositionX());
+			player2.setY(player2Info.getPositionY());
+			player2.setSize(PlayerConstants.PLAYER_SIZE_WIDTH, PlayerConstants.PLAYER_SIZE_HEIGHT);
+		} else {
+			return;
+		}
+	}
+
+	public void updatePlayer2Info(PlayerInfo player2Info) {
+		this.player2Info = player2Info;
+		player2.setX(player2Info.getPositionX());
+		player2.setY(player2Info.getPositionY());
+		
 	}
 }

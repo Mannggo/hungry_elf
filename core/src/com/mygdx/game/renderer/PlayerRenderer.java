@@ -2,6 +2,7 @@ package com.mygdx.game.renderer;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
@@ -13,13 +14,16 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Disposable;
+import com.google.gson.Gson;
 import com.mygdx.game.constant.CameraConstants;
 import com.mygdx.game.constant.MapConstants;
 import com.mygdx.game.constant.PlayerConstants;
 import com.mygdx.game.controller.PlayerController;
+import com.mygdx.game.dto.PlayerInfo;
 import com.mygdx.game.sprite.Floor;
 import com.mygdx.game.sprite.SpeedUpBill;
 import com.mygdx.game.sprite.Star;
+import com.mygdx.game.udp.client.UDPClient;
 
 /**
  * @author xiezd 2018-05-31 21:04
@@ -31,9 +35,11 @@ public class PlayerRenderer implements Disposable{
     private PlayerController playerController;
     private Sound catchAudio;
     private Sound speedUpAudio;
+    private Gson gson;
 
     public PlayerRenderer(PlayerController playerController) {
         this.playerController = playerController;
+        gson = new Gson();
         init();
     }
 
@@ -50,12 +56,12 @@ public class PlayerRenderer implements Disposable{
         camera.update();
     }
 
-    public void render() {
+    public void render(UDPClient client) {
         update(Gdx.graphics.getDeltaTime());
         renderItem(playerController.floors);
         renderItem(playerController.stars);
         renderItem(playerController.speedBills);
-        renderPlayer();
+        renderPlayer(client);
         playerController.cameraHelper.applyTo(camera);
     }
     public void resize(int width, int height) {
@@ -101,35 +107,44 @@ public class PlayerRenderer implements Disposable{
 		return false;
 	}
 
-	private void renderPlayer() {
+	private void renderPlayer(UDPClient client) {
         handleInput();
+        
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+        playerController.setPlayer2Info(client.playerInfo);
+        if (Objects.nonNull(playerController.player2)) {
+        	playerController.updatePlayer2Info(client.playerInfo);
+        	playerController.player2.draw(batch);
+        }
         playerController.player.draw(batch);
         batch.end();
+        client.sendMessage(gson.toJson(playerController.transferInfo));
     }
 
     private void handleInput() {
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-        	Gdx.app.debug(TAG, "user pressed key :¡¾A¡¿");
+//        	Gdx.app.debug(TAG, "user pressed key :¡¾A¡¿");
             playerController.left();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-        	Gdx.app.debug(TAG, "user pressed key :¡¾D¡¿");
+//        	Gdx.app.debug(TAG, "user pressed key :¡¾D¡¿");
             playerController.right();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-        	Gdx.app.debug(TAG, "user pressed key :¡¾W¡¿");
+//        	Gdx.app.debug(TAG, "user pressed key :¡¾W¡¿");
             playerController.up();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-        	Gdx.app.debug(TAG, "user pressed key :¡¾S¡¿");
+//        	Gdx.app.debug(TAG, "user pressed key :¡¾S¡¿");
             playerController.down();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
         	Gdx.app.debug(TAG, "user pressed key :¡¾SPACE¡¿");
         	playerController.focusPlayer();
         }
+        playerController.playerInfo.setPositionX(playerController.player.getX());
+        playerController.playerInfo.setPositionY(playerController.player.getY());
         
     }
 }
