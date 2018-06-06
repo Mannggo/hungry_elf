@@ -5,9 +5,9 @@ package com.mygdx.game.constant;
  */
 public class CameraConstants {
     // Visible game world is 5 meters wide
-    public static final float VIEWPORT_WIDTH = 10f;
+    public static final float VIEWPORT_WIDTH = 30f;
     // Visible game world is 5 meters tall
-    public static final float VIEWPORT_HEIGHT = 10f;
+    public static final float VIEWPORT_HEIGHT = 30f;
 
     public static final float ZOOM_MAX = 3f;
     public static final float ZOOM_MIN = 0.8f;

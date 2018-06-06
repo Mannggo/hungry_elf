@@ -17,20 +17,15 @@ public class MyGdxGame extends ApplicationAdapter {
 	private String TAG = getClass().getSimpleName();
 	private PlayerController playerController;
 	private PlayerRenderer playerRenderer;
-	private PlayerInfo playerInfo;
-	UDPClient client;
+	
 	
 	
 	@Override
 	public void create () {
-		String avatarNum = String.valueOf((int) (Math.random() * 10));
-		LoginInfo loginInfo = new LoginInfo("");
-		client = new UDPClient();
-		playerController = new PlayerController(client);
+		
+		playerController = new PlayerController();
 		playerRenderer = new PlayerRenderer(playerController);
 		
-		//开始接收消息
-		new Thread(client).start();
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		Gdx.app.debug(TAG, "Game Starting.");
 	}
@@ -40,7 +35,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	public void render () {
 		Gdx.gl.glClearColor(0xf,0xf,0xf, 0.2f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		playerRenderer.render(client);
+		playerRenderer.render();
 		
 	}
 	

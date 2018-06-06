@@ -1,8 +1,25 @@
 package com.mygdx.game.dto;
 
+import java.util.List;
+
 public class TransferInfo {
 	private PlayerInfo playerInfo;
 	private LoginInfo loginInfo;
+	private List<StarInfo> starInfos;
+	private List<BillInfo> billInfos;
+	
+	public List<StarInfo> getStarInfos() {
+		return starInfos;
+	}
+	public void setStarInfos(List<StarInfo> starInfos) {
+		this.starInfos = starInfos;
+	}
+	public List<BillInfo> getBillInfos() {
+		return billInfos;
+	}
+	public void setBillInfos(List<BillInfo> billInfos) {
+		this.billInfos = billInfos;
+	}
 	public PlayerInfo getPlayerInfo() {
 		return playerInfo;
 	}

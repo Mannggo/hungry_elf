@@ -9,6 +9,13 @@ public class PlayerInfo{
 	private Float positionY;
 	private String elfAvatar;
 	private Integer score;
+	private Integer roomNumber;
+	public Integer getRoomNumber() {
+		return roomNumber;
+	}
+	public void setRoomNumber(Integer roomNumber) {
+		this.roomNumber = roomNumber;
+	}
 	public Float getPositionX() {
 		return positionX;
 	}

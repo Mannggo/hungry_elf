@@ -14,8 +14,8 @@ public class PlayerConstants {
     public static final Float STEP_LEVEL_HIGH_STEP = 0.16F;
     public static HashMap<Integer, Float> SPEED_MAP;
     
-    public static final float PLAYER_SIZE_WIDTH = 1.2f;
-    public static final float PLAYER_SIZE_HEIGHT = 1.2f;
+    public static final float PLAYER_SIZE_WIDTH = 1.6f;
+    public static final float PLAYER_SIZE_HEIGHT = 1.6f;
     static {
     	SPEED_MAP = new HashMap<Integer, Float>();
     	SPEED_MAP.put(STEP_LEVEL_LOW, STEP_LEVEL_LOW_STEP);
